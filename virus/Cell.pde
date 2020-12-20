@@ -194,6 +194,9 @@ class Cell{
     if (!didTickGene)return;
     didTickGene = false;
     if(!DEBUG_WORLD)useEnergy();
+    if(genome.rotateOn >= genome.codons.size()){
+       genome.rotateOn = genome.codons.size() -1;
+    }
     Codon thisCodon = genome.codons.get(genome.rotateOn);
     wasSuccess = thisCodon.exec(this);
     
@@ -235,7 +238,19 @@ class Cell{
       laserCoor.add(getCodonCoor(index,genome.CODON_DIST));
     }
   }
-  
+ 
+  void hurtCodons(int start, int end, boolean isRelative){
+    laserTarget = null;
+    laserCoor.clear();
+    laserT = frameCount;
+    for(int pos = start; pos <= end; pos++){
+      int index = genome.loopAroundGenome((isRelative?genome.performerOn:0)+start); //usual constant, but we might wrap around after deleting enough items
+      for(int i = 0; i < end; i++){
+      genome.codons.get(index).hurt();
+      }
+      laserCoor.add(getCodonCoor(index,genome.CODON_DIST));
+    }
+  }  
   
   void writeFromMemory(int start, int end, boolean isRelative){
     if(memory.length() == 0){
@@ -275,6 +290,46 @@ class Cell{
       if(pos-start < memoryParts.length){
         String memoryPart = memoryParts[pos-start];
         c.setFullInfo(stringToInfo(memoryPart));
+        laserCoor.add(getCodonCoor(index,genome.CODON_DIST));
+      }
+      useEnergy();
+    }
+  }
+  void insertFromMemory(int start, int end, boolean isRelative){
+    if(memory.length() == 0){
+      return;
+    }
+    laserTarget = null;
+    laserCoor.clear();
+    laserT = frameCount;
+    if(genome.directionOn == 0){
+      writeOutwards();
+    }else{
+      if(genome.codons.size() <= MAX_CODON_COUNT){
+        insertInwards(start,end, isRelative);
+      }
+    }
+  }
+  public void insertInwards(int start, int end, boolean isRelative){
+    laserTarget = null;
+    String[] memoryParts = memory.split("-");
+    
+    int INJECT_SIZE = memoryParts.length;
+    
+    if(isRelative){
+      if(genome.performerOn >= genome.rotateOn){
+        genome.performerOn += INJECT_SIZE;
+      }
+      genome.rotateOn += INJECT_SIZE;
+      genome.rotateOnNext += INJECT_SIZE;
+    }
+    
+    for(int pos = start; pos <= end; pos++){
+      int index = genome.loopAroundGenome((isRelative?genome.performerOn:0)+pos);
+      if(pos-start < memoryParts.length){
+        String memoryPart = memoryParts[pos-start];
+        int[] info = stringToInfo(memoryPart);
+        genome.codons.add(index,new Codon(fromIntList(info)));
         laserCoor.add(getCodonCoor(index,genome.CODON_DIST));
       }
       useEnergy();

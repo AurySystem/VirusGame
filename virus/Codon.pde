@@ -135,7 +135,8 @@ enum CodonTypes{
   ReturnTo(new CodonReturnTo()),
   MoveHandBack(new CodonMoveHandBack()),
   Range(new CodonRange()),
-  AddTo(new CodonAddTo());
+  AddTo(new CodonAddTo()),
+  Insert(new CodonInsert());
   
   public final CodonType v;
   private CodonTypes(CodonType value) {
@@ -655,7 +656,8 @@ static class CodonDigest extends CodonType {
   }
   
   public boolean exec(Cell cell, CodonAttribute attribute) {
-    if (cell.genome.directionOn == 0) {
+    Genome genome = cell.genome;
+    if (genome.directionOn == 0) {
       if (attribute instanceof AttributeParticle) {
         Particle foodToEat = cell.selectParticleInCell(((AttributeParticle)attribute).getParticle().ordinal()); // digest either "food" or "waste". (now even UGO is possible!! no attribute for that yet tho)
         if(foodToEat != null){
@@ -666,6 +668,23 @@ static class CodonDigest extends CodonType {
         cell.energy += (1-cell.energy)*E_RECIPROCAL*0.2;
         cell.hurtWall(26);
         cell.laserWall();
+        return true;
+      }
+    }else{
+      if (attribute instanceof AttributeGenomeLoc) {       
+        
+        AttributeGenomeLoc loc = (AttributeGenomeLoc)attribute;
+        int start = loc.getLocation(cell);
+        int end = start;
+        if (attribute instanceof AttributeGenomeRange) {
+          AttributeGenomeRange range = (AttributeGenomeRange)attribute;
+          end = range.getEndLocation(cell);
+        }
+        
+        cell.hurtCodons(start, end, loc.isRelative);
+        cell.lastRange = new AbsoluteRange(loc.isRelative?genome.performerOn+start:start, end-start, cell.genome);
+        
+        
         return true;
       }
     }
@@ -1005,5 +1024,28 @@ static class CodonAddTo extends CodonType {
       return true;
     }
     return false;
+  }
+}
+static class CodonInsert extends CodonType {
+  public CodonInsert() {
+    super(18, c(10, 30, 200), c(255,255,255), "insert"); 
+  }
+  
+  public boolean exec(Cell cell, CodonAttribute attribute) {
+    Genome genome = cell.genome;
+    if (attribute instanceof AttributeGenomeRange) {
+      AttributeGenomeRange range = (AttributeGenomeRange)attribute;
+      
+      int start = range.getStartLocation(cell);
+      int end = range.getEndLocation(cell);
+      
+      cell.insertFromMemory(start, end, range.isRelative);
+      
+      cell.lastRange = new AbsoluteRange(genome.performerOn+start, end-start);
+      return true;
+    } else {
+      cell.insertFromMemory(0, 0, true); 
+      return true;
+    }
   }
 }

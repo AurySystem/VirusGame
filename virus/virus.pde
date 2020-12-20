@@ -129,7 +129,8 @@ void setup(){
       }
     }
   }
-  fullScreen();
+  //fullScreen();
+  size(1728,972);
   noSmooth();
   scalefactor = (float)width/1728;
   UGOcell = new Cell(-1,-1,2,0,1,"00-00-00-00-00");
