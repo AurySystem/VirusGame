@@ -89,7 +89,11 @@ class Particle{
     int INJECT_SIZE = UGO_genome.codons.size();
     
     for(int i = 0; i < toInject.size(); i++){
-      c.genome.codons.add(injectionLocation+i,new Codon(toInject.get(i)));
+      if(injectionLocation+i >= c.genome.codons.size()){
+        c.genome.codons.add(injectionLocation,new Codon(toInject.get(i)));
+      } else{
+        c.genome.codons.add(injectionLocation+i,new Codon(toInject.get(i)));
+      }
     }
     if(c.genome.performerOn >= c.genome.rotateOn){
       c.genome.performerOn += INJECT_SIZE;

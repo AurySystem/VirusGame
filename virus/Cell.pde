@@ -235,6 +235,9 @@ class Cell{
         genome.rotateOnNext--;
       }
       genome.codons.remove(index);
+      if(genome.codons.size() == 0){
+        genome.codons.add(new Codon());
+      }
       laserCoor.add(getCodonCoor(index,genome.CODON_DIST));
     }
   }
@@ -313,17 +316,7 @@ class Cell{
   public void insertInwards(int start, int end, boolean isRelative){
     laserTarget = null;
     String[] memoryParts = memory.split("-");
-    
-    int INJECT_SIZE = memoryParts.length;
-    
-    if(isRelative){
-      if(genome.performerOn >= genome.rotateOn){
-        genome.performerOn += INJECT_SIZE;
-      }
-      genome.rotateOn += INJECT_SIZE;
-      genome.rotateOnNext += INJECT_SIZE;
-    }
-    
+        
     for(int pos = start; pos <= end; pos++){
       int index = genome.loopAroundGenome((isRelative?genome.performerOn:0)+pos);
       if(pos-start < memoryParts.length){
@@ -333,6 +326,19 @@ class Cell{
         laserCoor.add(getCodonCoor(index,genome.CODON_DIST));
       }
       useEnergy();
+    }
+    if(isRelative){
+      if(genome.performerOn >= genome.rotateOn){
+        genome.performerOn += end;
+      }
+      genome.rotateOn += end+1;
+      genome.rotateOnNext += end;
+    } else {
+      if(genome.performerOn >= genome.rotateOn){
+        genome.performerOn++;
+      }
+      genome.rotateOn += 2;
+      genome.rotateOnNext++;
     }
   }
   public void healWall(){
