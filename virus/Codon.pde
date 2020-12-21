@@ -141,7 +141,7 @@ enum CodonTypes {
   MoveHandBack(new CodonMoveHandBack()),
   Range(new CodonRange()),
   AddTo(new CodonAddTo()),
-  Insert(new CodonInsert());
+  InsertCodons(new CodonInsertCodons());
 
   public final CodonType v;
 
@@ -1064,26 +1064,9 @@ static class CodonAddTo extends CodonType {
   }
 }
 
-static class CodonInsert extends CodonWrite { //instead of overwriting it insterts new codons
-  public CodonInsert() {
-    super(18, c(20, 80, 160), c(255,255,255), "insert", true); 
+static class CodonInsertCodons extends CodonWrite { //instead of overwriting it insterts new codons
+  public CodonInsertCodons() {
+    super(18, "insert Codon", c(20, 80, 160), true); 
   }
   
-  public boolean exec(Cell cell, CodonAttribute attribute) {
-    Genome genome = cell.genome;
-    if (attribute instanceof AttributeGenomeRange) {
-      AttributeGenomeRange range = (AttributeGenomeRange)attribute;
-      
-      int start = range.getStartLocation(cell);
-      int end = range.getEndLocation(cell);
-      
-      cell.insertFromMemory(start, end, range.isRelative);
-      
-      cell.lastRange = new AbsoluteRange(genome.performerOn+start, end-start);
-      return true;
-    } else {
-      cell.insertFromMemory(0, 0, true); 
-      return true;
-    }
-  }
 }
