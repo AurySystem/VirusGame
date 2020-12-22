@@ -322,8 +322,8 @@ class Cell{
       }
       genome.codons.remove(index);
       if(genome.codons.size() == 0){
-        genome.codons.add(new Codon());
-        break; // stop removing codons if you remove all codons for some reason, and add blank codon to let the cell die out with from lack of energy
+        type = CellType.Shell;
+        break; // stop removing codons if you remove all codons for some reason, and convert to a cell shell
       }
       laserCoor.add(genome.getCodonCoor(index, CODON_DIST, x, y));
     }
@@ -388,8 +388,8 @@ class Cell{
     laserCoor.clear();
     laserT = frameCount;
     
-    if(genome.directionOn != 0){
-      if(genome.codons.size() <= MAX_CODON_COUNT){
+    if(genome.inwards){
+      if(genome.codons.size() <= settings.max_codon_count){
         String[] memoryParts = memory.split("-");
             
         for(int pos = start; pos <= end; pos++){
@@ -397,12 +397,12 @@ class Cell{
           
           if(pos-start < memoryParts.length){
             String memoryPart = memoryParts[pos-start];
-            int[] info = stringToInfo(memoryPart);
+            int[] info = util.stringToInfo(memoryPart);
             
             genome.codons.add(index,new Codon(fromIntList(info)));
-            laserCoor.add(getCodonCoor(index,genome.CODON_DIST));
+            laserCoor.add(genome.getCodonCoor(index, CODON_DIST, x, y));
           }
-          useEnergy();
+          useEnergy(settings.gene_tick_energy * settings.gene_tick_time / 40);
           
         }
         //todo investigate redoing this one
